@@ -17,7 +17,7 @@ export default class Renderer extends React.Component{
   }
 
   render() {
-    return <canvas ref={this.canvas_ref} width={this.width} height={this.height}></canvas>
+    return <canvas ref={this.canvas_ref} style={{width: this.width, hight: this.height}}></canvas>
   }
 
   componentDidMount() {
@@ -55,22 +55,25 @@ void main() {
       position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
     };
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
-  
+
+    console.log(gl.canvas.width);
+    console.log(gl.canvas.height);
+
     function render(time) {
-      twgl.resizeCanvasToDisplaySize(gl.canvas);
-      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  
-      const uniforms = {
-        time: time * 0.001,
-        resolution: [gl.canvas.width, gl.canvas.height],
-      };
-  
-      gl.useProgram(programInfo.program);
-      twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
-      twgl.setUniforms(programInfo, uniforms);
-      twgl.drawBufferInfo(gl, bufferInfo);
-  
-      requestAnimationFrame(render);
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    
+        const uniforms = {
+            time: time * 0.001,
+            resolution: [gl.canvas.width, gl.canvas.height],
+        };
+    
+        gl.useProgram(programInfo.program);
+        twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
+        twgl.setUniforms(programInfo, uniforms);
+        twgl.drawBufferInfo(gl, bufferInfo);
+    
+        requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
   }

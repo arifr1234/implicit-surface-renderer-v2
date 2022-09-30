@@ -2,5 +2,5 @@ A simple `TWGL.js` template, with `babel-plugin-inline-import` and `babel-inline
 
 1. Fork/clone the repo.  
 ```git clone https://github.com/arifr1234/next-js-twgl-template <NEW NAME>```  
-2. Change the name in `package.json` and `package-lock.json` from `"next-js-twgl-template"` to the name of your choice. (it appears twice in `package-lock.json`)
+2. Change all occurrences of `"next-js-twgl-template"` in `package.json` and `package-lock.json` to the name of your choice. (you can also remove `package-lock.json`)
 3. Run ```npm i```

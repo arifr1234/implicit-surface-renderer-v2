@@ -1,0 +1,77 @@
+import React from 'react'
+// import triangleVertWGSL from '../shaders/triangle.vert.wgsl';
+// import fragWGSL from '../shaders/frag_shader.frag.wgsl';
+// import updateComputeWGSL from '../shaders/update.compute.wgsl';
+// import commonWGSL from '../shaders/common.wgsl';
+// import * as type_utils from './utils/type_utils'
+
+import * as twgl from 'twgl.js'
+
+export default class Renderer extends React.Component{
+  constructor(props) {
+    super(props);
+
+    this.canvas_ref = React.createRef();
+    this.width = props.width;
+    this.height = props.height;
+  }
+
+  render() {
+    return <canvas ref={this.canvas_ref} width={this.width} height={this.height}></canvas>
+  }
+
+  componentDidMount() {
+    const vs = `
+attribute vec4 position;
+
+void main() {
+  gl_Position = position;
+}
+    `;
+
+    const fs = `
+precision mediump float;
+
+uniform vec2 resolution;
+uniform float time;
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / resolution;
+  float color = 0.0;
+  // lifted from glslsandbox.com
+  color += sin( uv.x * cos( time / 3.0 ) * 60.0 ) + cos( uv.y * cos( time / 2.80 ) * 10.0 );
+  color += sin( uv.y * sin( time / 2.0 ) * 40.0 ) + cos( uv.x * sin( time / 1.70 ) * 40.0 );
+  color += sin( uv.x * sin( time / 1.0 ) * 10.0 ) + sin( uv.y * sin( time / 3.50 ) * 80.0 );
+  color *= sin( time / 10.0 ) * 0.5;
+
+  gl_FragColor = vec4( vec3( color * 0.5, sin( color + time / 2.5 ) * 0.75, color ), 1.0 );
+}
+    `;
+
+    const gl = this.canvas_ref.current.getContext("webgl");
+    const programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+  
+    const arrays = {
+      position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
+    };
+    const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+  
+    function render(time) {
+      twgl.resizeCanvasToDisplaySize(gl.canvas);
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  
+      const uniforms = {
+        time: time * 0.001,
+        resolution: [gl.canvas.width, gl.canvas.height],
+      };
+  
+      gl.useProgram(programInfo.program);
+      twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
+      twgl.setUniforms(programInfo, uniforms);
+      twgl.drawBufferInfo(gl, bufferInfo);
+  
+      requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+  }
+}

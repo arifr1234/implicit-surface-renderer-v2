@@ -15,6 +15,8 @@
     "twgl.js": "^5.0.3"
   },
   "devDependencies": {
+    "babel-inline-import-loader": "^1.0.1",
+    "babel-plugin-inline-import": "^3.0.0",
     "eslint": "8.24.0",
     "eslint-config-next": "12.3.1"
   }

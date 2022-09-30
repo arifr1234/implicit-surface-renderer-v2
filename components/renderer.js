@@ -15,7 +15,7 @@ export default class Renderer extends React.Component{
   }
 
   render() {
-    return <canvas ref={this.canvas_ref} style={{width: this.width, hight: this.height}}></canvas>
+    return <canvas ref={this.canvas_ref} style={{width: this.width, height: this.height}}></canvas>
   }
 
   componentDidMount() {

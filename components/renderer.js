@@ -6,6 +6,10 @@ import vertex_shader from "../shaders/vs.glsl";
 import fragment_shader from "../shaders/fs.glsl";
 import fragment_shader2 from "../shaders/fs2.glsl";
 
+function get_attachments(uniforms){
+  return Object.fromEntries(Object.entries(uniforms).map(([key, value]) => [key, value.attachments[0]]));
+}
+
 export default class Renderer extends React.Component{
   constructor(props) {
     super(props);
@@ -19,14 +23,14 @@ export default class Renderer extends React.Component{
     return <canvas ref={this.canvas_ref} style={{width: this.width, height: this.height}}></canvas>
   }
 
-  draw(gl, program, to, from, uniforms, vertex_buffer)
+  draw(gl, program, to, uniforms)
   {
-      twgl.bindFramebufferInfo(gl, to);
+    twgl.bindFramebufferInfo(gl, to);
 
-      gl.useProgram(program.program);
-      twgl.setBuffersAndAttributes(gl, program, vertex_buffer);
-      twgl.setUniforms(program, Object.assign({}, uniforms, { buffer_A: from.attachments[0] }));
-      twgl.drawBufferInfo(gl, vertex_buffer);
+    gl.useProgram(program.program);
+    twgl.setBuffersAndAttributes(gl, program, self.triangles_buffer_info);
+    twgl.setUniforms(program, uniforms);
+    twgl.drawBufferInfo(gl, self.triangles_buffer_info);
   }
 
   componentDidMount() {
@@ -54,8 +58,8 @@ export default class Renderer extends React.Component{
 
     A.in_buffer = twgl.createFramebufferInfo(gl, attachments);
     A.out_buffer = twgl.createFramebufferInfo(gl, attachments);
-  
-    const triangles_buffer_info = twgl.createBufferInfoFromArrays(gl, {
+
+    self.triangles_buffer_info = twgl.createBufferInfoFromArrays(gl, {
       position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
     });
     
@@ -68,8 +72,8 @@ export default class Renderer extends React.Component{
 
         gl.viewport(0, 0, resolution[0], resolution[1]);
     
-        this.draw(gl, A.program, A.out_buffer, A.in_buffer, uniforms, triangles_buffer_info);
-        this.draw(gl, image.program, null, A.in_buffer, uniforms, triangles_buffer_info);
+        this.draw(gl, A.program,     A.out_buffer, {...uniforms, ...get_attachments({buffer_A: A.in_buffer})});
+        this.draw(gl, image.program, null,         {...uniforms, ...get_attachments({buffer_A: A.in_buffer})});
 
         [A.out_buffer, A.in_buffer] = [A.in_buffer, A.out_buffer]
     

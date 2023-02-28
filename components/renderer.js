@@ -28,9 +28,9 @@ export default class Renderer extends React.Component{
     twgl.bindFramebufferInfo(gl, to);
 
     gl.useProgram(program.program);
-    twgl.setBuffersAndAttributes(gl, program, self.triangles_buffer_info);
+    twgl.setBuffersAndAttributes(gl, program, this.triangles_buffer_info);
     twgl.setUniforms(program, uniforms);
-    twgl.drawBufferInfo(gl, self.triangles_buffer_info);
+    twgl.drawBufferInfo(gl, this.triangles_buffer_info);
   }
 
   componentDidMount() {
@@ -59,7 +59,7 @@ export default class Renderer extends React.Component{
     A.in_buffer = twgl.createFramebufferInfo(gl, attachments);
     A.out_buffer = twgl.createFramebufferInfo(gl, attachments);
 
-    self.triangles_buffer_info = twgl.createBufferInfoFromArrays(gl, {
+    this.triangles_buffer_info = twgl.createBufferInfoFromArrays(gl, {
       position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
     });
     

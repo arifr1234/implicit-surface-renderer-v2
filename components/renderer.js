@@ -3,8 +3,8 @@ import React from 'react'
 import * as twgl from 'twgl.js'
 
 import vertex_shader from "../shaders/vs.glsl";
-import fragment_shader from "../shaders/fs.glsl";
-import fragment_shader2 from "../shaders/fs2.glsl";
+import buffer_a_fs from "../shaders/buffer_a_fs.glsl";
+import image_fs from "../shaders/image_fs.glsl";
 
 function get_attachments(uniforms){
   return Object.fromEntries(Object.entries(uniforms).map(([key, value]) => [key, value.attachments[0]]));
@@ -44,11 +44,11 @@ export default class Renderer extends React.Component{
     const image = {};
     const A = {};
 
-    image.program = twgl.createProgramInfo(gl, [vertex_shader, fragment_shader2], err => {
+    image.program = twgl.createProgramInfo(gl, [vertex_shader, image_fs], err => {
       throw Error(err);
     });
 
-    A.program = twgl.createProgramInfo(gl, [vertex_shader, fragment_shader], err => {
+    A.program = twgl.createProgramInfo(gl, [vertex_shader, buffer_a_fs], err => {
       throw Error(err);
     });
 

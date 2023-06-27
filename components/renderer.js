@@ -20,7 +20,32 @@ export default class Renderer extends React.Component{
   }
 
   render() {
-    return <canvas ref={this.canvas_ref} style={{width: this.width, height: this.height}}></canvas>
+    this.mouse_pos = [-1, -1];
+
+    const get_mouse_pos = event => {
+      var rect = event.target.getBoundingClientRect();
+      return [event.clientX - rect.left, this.resolution[1] - (event.clientY - rect.top)];
+    }
+
+    const handleMouseMove = event => {
+      if(this.is_mouse_down)
+      {
+        this.mouse_pos = get_mouse_pos(event);
+      }
+    };
+
+    const handleMouseDown = event => {
+      this.is_mouse_down = true;
+      this.mouse_pos = get_mouse_pos(event);
+    }
+
+    const handleMouseUp = event => {
+      this.is_mouse_down = false;
+      this.mouse_pos = get_mouse_pos(event);
+      this.mouse_pos[0] = -Math.abs(this.mouse_pos[0]);
+    }
+
+    return <canvas ref={this.canvas_ref} onMouseMove={handleMouseMove} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} style={{width: this.width, height: this.height}}></canvas>
   }
 
   draw(gl, program, to, uniforms)
@@ -38,8 +63,8 @@ export default class Renderer extends React.Component{
     gl.getExtension('EXT_color_buffer_float');
 
     twgl.resizeCanvasToDisplaySize(gl.canvas);
-    const resolution = [gl.canvas.width, gl.canvas.height];
-    console.log(resolution);
+    this.resolution = [gl.canvas.width, gl.canvas.height];
+    console.log("resolution: " + this.resolution);
 
     const image = {};
     const A = {};
@@ -67,10 +92,11 @@ export default class Renderer extends React.Component{
     const render = (time) => {
         const uniforms = {
             time: time * 0.001,
-            resolution: resolution,
+            resolution: this.resolution,
+            mouse_pos: this.mouse_pos,
         };
 
-        gl.viewport(0, 0, resolution[0], resolution[1]);
+        gl.viewport(0, 0, this.resolution[0], this.resolution[1]);
     
         this.draw(gl, A.program,     A.out_buffer, {...uniforms, ...get_attachments({buffer_A: A.in_buffer})});
         this.draw(gl, image.program, null,         {...uniforms, ...get_attachments({buffer_A: A.in_buffer})});

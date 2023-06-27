@@ -3,6 +3,7 @@ precision mediump float;
 
 uniform vec2 resolution;
 uniform float time;
+uniform vec2 mouse_pos;
 
 out vec4 out_color;
 
@@ -28,7 +29,13 @@ void main() {
 
   color *= 0.97;
 
-  vec2 abs_uv = abs(uv - 0.3 * vec2(2. * cos(time), sin(2. * time)));
+  vec2 mouse = mix(
+    (mouse_pos - resolution / 2.) / min(resolution.x, resolution.y),
+    0.3 * vec2(2. * cos(time), sin(2. * time)),
+    step(mouse_pos.x, 0.)
+  );
+  
+  vec2 abs_uv = abs(uv - mouse);
   float t = 3.* time;
   vec4 square = vec4(
     vec3(1, 0, 0), 

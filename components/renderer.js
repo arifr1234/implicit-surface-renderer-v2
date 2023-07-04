@@ -1,6 +1,6 @@
-import React from 'react'
+import React from 'react';
 
-import * as twgl from 'twgl.js'
+import * as twgl from 'twgl.js';
 
 import vertex_shader from "../shaders/vs.glsl";
 import buffer_a_fs from "../shaders/buffer_a_fs.glsl";
@@ -48,14 +48,14 @@ export default class Renderer extends React.Component{
     return <canvas ref={this.canvas_ref} onMouseMove={handleMouseMove} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} style={{width: this.width, height: this.height}}></canvas>
   }
 
-  draw(gl, program, to, uniforms)
+  draw(gl, program, to, uniforms, triangles_buffer_info)
   {
     twgl.bindFramebufferInfo(gl, to);
 
     gl.useProgram(program.program);
-    twgl.setBuffersAndAttributes(gl, program, this.triangles_buffer_info);
+    twgl.setBuffersAndAttributes(gl, program, triangles_buffer_info);
     twgl.setUniforms(program, uniforms);
-    twgl.drawBufferInfo(gl, this.triangles_buffer_info);
+    twgl.drawBufferInfo(gl, triangles_buffer_info);
   }
 
   componentDidMount() {
@@ -84,8 +84,9 @@ export default class Renderer extends React.Component{
     A.in_buffer = twgl.createFramebufferInfo(gl, attachments);
     A.out_buffer = twgl.createFramebufferInfo(gl, attachments);
 
-    this.triangles_buffer_info = twgl.createBufferInfoFromArrays(gl, {
-      position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
+    this.plane_triangles_buffer_info = twgl.createBufferInfoFromArrays(gl, {
+      position: [...[-1, -1, 0], ...[1, -1, 0], ...[-1, 1, 0], ...[1, 1, 0]],
+      indices: [...[0, 1, 2], ...[2, 1, 3]]
     });
     
 
@@ -98,8 +99,8 @@ export default class Renderer extends React.Component{
 
         gl.viewport(0, 0, this.resolution[0], this.resolution[1]);
     
-        this.draw(gl, A.program,     A.out_buffer, {...uniforms, ...get_attachments({buffer_A: A.in_buffer})});
-        this.draw(gl, image.program, null,         {...uniforms, ...get_attachments({buffer_A: A.in_buffer})});
+        this.draw(gl, A.program,     A.out_buffer, {...uniforms, ...get_attachments({buffer_A: A.in_buffer})}, this.plane_triangles_buffer_info);
+        this.draw(gl, image.program, null,         {...uniforms, ...get_attachments({buffer_A: A.in_buffer})}, this.plane_triangles_buffer_info);
 
         [A.out_buffer, A.in_buffer] = [A.in_buffer, A.out_buffer]
     

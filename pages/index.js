@@ -17,7 +17,7 @@ export default function Home() {
           AAAAA
         </h1>
 
-        <Renderer width="100%" height="100%"></Renderer>
+        <Renderer width="800px" height="500px"></Renderer>
       </main>
     </div>
   )

@@ -14,10 +14,10 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          AAAAA
+          ARI
         </h1>
 
-        <Renderer width="800px" height="500px"></Renderer>
+        <Renderer width="800px" height="400px"></Renderer>
       </main>
     </div>
   )

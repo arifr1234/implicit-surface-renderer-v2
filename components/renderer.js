@@ -92,20 +92,27 @@ export default class Renderer extends React.Component{
       indices: [...[0, 1, 2], ...[2, 1, 3]]
     });
 
-    const min_size = [30, 30];
+    const min_size = [3, 3];
 
     Array.prototype.divide = function (other) { return _.zipWith(this, other, _.divide) }
     Array.prototype.add = function (other) { return _.zipWith(this, other, _.add) }
     Array.prototype.multiply = function (other) { return _.zipWith(this, other, _.multiply) }
     Array.prototype.gt = function (other) { return _.zipWith(this, other, _.gt) }
+    Array.prototype.lt = function (other) { return _.zipWith(this, other, _.lt) }
     
-    this.pattern_resolution = _.map(this.resolution.divide(min_size), x => _.ceil(x));
+    this.pattern_resolution = _.map(this.resolution.divide(min_size), x => _.ceil(x) + 1);
 
-    const triangles_pattern = this.generate_triangles(this.pattern_resolution, [2, 2]);
+    const triangles_pattern = this.generate_triangles(this.pattern_resolution, [4, 4])
 
-    this.triangles_pattern_buffer_info = twgl.createBufferInfoFromArrays(gl, {
+    const triangles_pattern_arrays = {
       vertex_index: {data: _.range(this.pattern_resolution[0] * this.pattern_resolution[1]), numComponents: 1, type: Int32Array},
       indices: _.flatten(triangles_pattern)
+    };
+    this.triangles_pattern_buffer_info = twgl.createBufferInfoFromArrays(gl, triangles_pattern_arrays);
+
+    this.triangles_pattern_wireframe_buffer_info = twgl.createBufferInfoFromArrays(gl, {
+      ...triangles_pattern_arrays,
+      indices: this.generate_triangle_wireframe(triangles_pattern_arrays.indices)
     });
 
     const render = (time) => {
@@ -124,10 +131,18 @@ export default class Renderer extends React.Component{
           gl, 
           image.program, 
           null,         
-          {...uniforms, ...get_attachments({buffer_A: A.in_buffer})}, 
+          {...uniforms, wireframe: 0., ...get_attachments({buffer_A: A.in_buffer})}, 
           this.triangles_pattern_buffer_info,
-          gl.TRIANGLES
+          gl.TRIANGLE
         );
+        // this.draw(
+        //   gl, 
+        //   image.program, 
+        //   null,
+        //   {...uniforms, wireframe: 1., ...get_attachments({buffer_A: A.in_buffer})}, 
+        //   this.triangles_pattern_wireframe_buffer_info,
+        //   gl.LINES
+        // );
 
         [A.out_buffer, A.in_buffer] = [A.in_buffer, A.out_buffer]
     
@@ -144,12 +159,14 @@ export default class Renderer extends React.Component{
 
     var size = [2, 2];  // size of base_pattern
 
-    for(var i = 0; i < 1; i += 1)
+    for(var i = 0; true; i += 1)
     {
       const current_pattern = this.map_triangles(base_pattern, coord => _.zipWith(coord, size, (v, s) => v * s / 2));
       
-      _.range(0, resolution[0] - size[0], size[0]).map(x => 
-        _.range(0, resolution[1] - size[1], size[1]).map(y => {
+      // triangles = [];
+
+      _.range(0, resolution[0], size[0]).map(x => 
+        _.range(0, resolution[1], size[1]).map(y => {
           triangles = _.concat(triangles, this.map_triangles(current_pattern, coord => coord.add([x, y])))
         })
       )
@@ -159,14 +176,14 @@ export default class Renderer extends React.Component{
       size = size.multiply(multiplier);
     }
 
-    return this.map_triangles(triangles, coord => coord[1] * resolution[0] + coord[0]);
+    return this.map_triangles(triangles, coord => _.min([coord[1], resolution[1] - 1]) * resolution[0] + _.min([coord[0], resolution[0] - 1]));
   }
 
   generate_base_pattern()
   {
     var pattern = [];
     var rotated_square = [
-      [[0, 0], [1, 0], [0, 1]],
+      [[1, 0], [0, 1], [0, 0]],
       [[1, 0], [0, 1], [1, 1]]
     ];
     _.range(4).map((i) => {
@@ -180,5 +197,15 @@ export default class Renderer extends React.Component{
   map_triangles(triangles, func)
   {
     return triangles.map(triangle => triangle.map(func));
+  }
+
+  generate_triangle_wireframe(indexes)
+  {
+    const chunks = _.chunk(indexes, 3)
+    return _.flatten(_.flatten(_.zip(
+      chunks.map(chunk => [chunk[0], chunk[1]]),
+      chunks.map(chunk => [chunk[1], chunk[2]]),
+      chunks.map(chunk => [chunk[0], chunk[2]])
+    )))
   }
 }

@@ -4,11 +4,15 @@ precision mediump float;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D buffer_A;
+uniform float wireframe;
 
-flat in vec3 v_color;
+in vec3 v_color;
+in float to_discard;
 
 out vec4 out_color;
 
 void main() {
-  out_color = vec4(v_color, 1.);
+  out_color = vec4((1. - wireframe) * v_color, 1.);
+
+  if(to_discard != 0.) discard;
 }
